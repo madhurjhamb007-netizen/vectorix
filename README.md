@@ -28,11 +28,7 @@ and no document leaves the machine.
 10. [How FAISS similarity search works](#how-faiss-similarity-search-works)
 11. [Persistence and consistency](#persistence-and-consistency)
 12. [Security and error handling](#security-and-error-handling)
-13. [Testing](#testing)
-14. [Limitations](#limitations)
-15. [Future improvements](#future-improvements)
-16. [Troubleshooting](#troubleshooting)
-17. [Interview concepts](#interview-concepts)
+
 
 ---
 
