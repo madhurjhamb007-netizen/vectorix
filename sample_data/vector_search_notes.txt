@@ -1,0 +1,49 @@
+Vector Search and Semantic Retrieval
+====================================
+
+Keyword search treats text as a bag of exact tokens. It is fast and predictable, but it misses paraphrases. A document that says "cardiac arrest" may be relevant to a query for "heart attack" even though the words are different. Semantic search addresses this gap by representing text in a vector space where related meanings are close together.
+
+Embeddings
+----------
+
+An embedding model converts text into a fixed-length list of floating-point numbers. The model is trained so that sentences with similar meaning receive similar vectors. A bi-encoder encodes the query and each document independently. That makes it possible to pre-compute document vectors once and compare them with any future query.
+
+This project uses the all-MiniLM-L6-v2 sentence-transformer model. It produces 384-dimensional vectors and runs comfortably on a CPU. The model has a limited context window, so long documents must be split into chunks before embedding. Each chunk should be large enough to carry a coherent idea and small enough to fit the model context. Overlapping chunks reduce the chance that a sentence crossing a boundary becomes unusable.
+
+Cosine similarity
+-----------------
+
+Cosine similarity measures the angle between two vectors. It is calculated as the dot product of the vectors divided by the product of their lengths. When both vectors are L2-normalized to unit length, the cosine similarity is simply their dot product. The score ranges from -1 to 1 in general; for semantic embeddings, higher values indicate greater relatedness.
+
+Normalization is important because it removes the effect of vector magnitude. The ingestion pipeline normalizes every document vector, and the query path normalizes each query vector with the same function. The database stores only metadata, while the vector artifacts live in the FAISS index and its companion manifest.
+
+FAISS and inner-product search
+------------------------------
+
+FAISS is a library for efficient similarity search over dense vectors. The IndexFlatIP structure performs an exact inner-product search by comparing the query against every stored vector. With normalized vectors, inner product equals cosine similarity. Exact search has linear time complexity in the number of vectors, which is perfectly adequate for a local library of thousands or tens of thousands of chunks.
+
+For a larger corpus, approximate indexes such as IVF-Flat, HNSW, or product quantization trade a small amount of recall for much lower latency and memory use. The application can later swap the index implementation without changing the ingestion or search interfaces.
+
+A vector index stores positions, not document names. The application therefore keeps a manifest that maps each vector position to a chunk identifier in SQLite. Search results are joined back to the chunk table to obtain the document name, original text, and page number. If a document is deleted, its vectors are removed and the remaining positions are compacted. The API also filters search hits through SQLite, so a stale vector can never resurrect a deleted document.
+
+Chunking strategy
+-----------------
+
+The ingestion pipeline extracts text page by page for PDFs and as a single document for TXT files. Text is normalized, then split into overlapping chunks whose size is measured in characters. Splitting happens at word boundaries rather than in the middle of words. The next chunk starts with trailing context from the previous chunk, which helps queries that depend on a sentence spanning a boundary.
+
+Page numbers are retained for PDF chunks. That gives the user a precise citation such as "paper.pdf, page 7" instead of an opaque result. TXT documents do not have pages, so their chunks carry no page number.
+
+Query pipeline
+--------------
+
+When a user submits a natural language question, the backend validates the query, embeds it with the same model used for indexing, normalizes it, and asks the vector index for the nearest chunks. It over-fetches slightly, then joins candidates to the document database and returns the best top-k passages with their cosine scores. If the library is empty or the index has not been built yet, the API returns an empty result with an explanatory reason instead of failing.
+
+Persistence and recovery
+------------------------
+
+SQLite stores documents and chunk text. The index directory stores a NumPy snapshot of the normalized vectors and a JSON manifest mapping positions to chunk IDs. When FAISS is available, the native index is also written to disk. On startup, the application loads the manifest, verifies counts and dimensions, and reconstructs or reads the FAISS index. A health endpoint reports whether the vector count and database chunk count are synchronized. If they diverge, the user can re-embed every chunk through the rebuild endpoint.
+
+Security and privacy
+--------------------
+
+Everything runs locally. No text is sent to a paid external API. Uploaded files are written under UUID names inside a dedicated directory and are never exposed by the static file server. The original filename is kept only as display metadata. Extension checks, streaming size limits, PDF header validation, and parameterized SQL queries protect the ingestion boundary. The dashboard renders document text with safe DOM text nodes rather than injecting HTML.

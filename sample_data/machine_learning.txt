@@ -1,0 +1,42 @@
+Machine Learning Foundations
+================================
+
+Machine learning is a branch of artificial intelligence in which computer systems learn patterns from data rather than following only hand-written rules. A learning algorithm is given examples, a way to measure error, and a procedure for adjusting its internal parameters. After training, the resulting model can make predictions or decisions about new inputs.
+
+Supervised learning
+--------------------
+
+Supervised learning uses a labeled dataset. Every training example pairs an input with the desired output, often called a label or target. The model learns a mapping from inputs to targets and is evaluated on examples it has not seen before. The two most common supervised learning tasks are:
+
+1. Classification: the target is a discrete category. Examples include spam detection, sentiment analysis, image recognition, and medical diagnosis. Binary classification has two classes; multiclass classification has more than two.
+
+2. Regression: the target is a continuous number. Examples include predicting house prices, estimating delivery time, or forecasting energy demand.
+
+Popular supervised algorithms include linear regression, logistic regression, decision trees, random forests, support vector machines, k-nearest neighbors, and neural networks. The choice depends on the amount and shape of data, interpretability requirements, training cost, and the risk of overfitting. Data is usually split into training, validation, and test sets so that model selection does not leak information from the final evaluation.
+
+Unsupervised learning
+---------------------
+
+Unsupervised learning works with unlabeled data. Instead of predicting a known target, the algorithm tries to discover structure. Clustering groups similar observations, with k-means and hierarchical clustering as common examples. Dimensionality reduction methods such as principal component analysis compress many features into fewer informative dimensions. Association rules and anomaly detection also fall under unsupervised learning. Because there are no labels, evaluation is harder and often depends on domain expertise or downstream usefulness.
+
+Reinforcement learning and other paradigms
+------------------------------------------
+
+Reinforcement learning trains an agent through interaction with an environment. The agent receives rewards or penalties and learns a policy that maximizes long-term return. It is used in robotics, game playing, and recommendation systems. Semi-supervised learning combines a small labeled dataset with a larger unlabeled one. Self-supervised learning creates training signals from the structure of unlabeled data and underpins many modern language and vision models.
+
+Overfitting and generalization
+------------------------------
+
+Overfitting happens when a model memorizes the training set, including its noise and accidental patterns, instead of learning general rules. It usually shows up as excellent training accuracy but poor validation or test accuracy. Common causes include very complex models, too little training data, noisy features, and training for too many epochs.
+
+Techniques that reduce overfitting include regularization, pruning, early stopping, dropout, data augmentation, simpler architectures, and collecting more representative data. Cross-validation provides a more reliable estimate of generalization. Underfitting is the opposite problem: the model is too simple or undertrained and performs poorly on both training and unseen data. The goal is the right balance between bias and variance.
+
+Evaluation
+----------
+
+Classification models are often measured with accuracy, precision, recall, F1 score, and ROC-AUC. Regression models use mean absolute error, mean squared error, and R-squared. A confusion matrix shows which classes are being confused. No single metric is always appropriate: for rare disease screening, recall may matter more than raw accuracy, while a spam filter may need high precision to avoid discarding legitimate mail.
+
+Responsible machine learning
+----------------------------
+
+Models inherit biases and gaps from their training data. Teams should document data sources, check performance across subgroups, monitor drift after deployment, and provide human review for high-impact decisions. Privacy, consent, explainability, and security are part of the engineering problem, not optional extras.
